@@ -88,6 +88,57 @@ app.post('/articles/add', function(req, res){
   });
 });
 
+// Load and Edit Form
+app.get('/article/edit/:id', function(req, res){
+  // I think this is a mongoose thing. Gets the article
+  // by id.
+  Article.findById(req.params.id, function(err, article){
+    res.render('edit_article', {
+      // Dynamic title :)
+      title: 'Edit Article',
+      article:article
+    });
+  });
+});
+
+// Add update submit POST route
+// Notice: These have the same url but they are different requests
+app.post('/articles/edit/:id', function(req, res){
+  // not creating a new object
+  let article = {};
+  // These have been parsed already?
+  article.title = req.body.title;
+  article.author = req.body.author;
+  article.body = req.body.body;
+
+  // Create a query because we have to specify which to update
+  let query = {_id:req.params.id}
+  // Notice that instead of using the article variable (or let)
+  // we use the model (Article) to send to the DB. Then update
+  Article.update(query, article, function(err){
+    if(err){
+      console.log(err);
+    } else{
+      //If no error, then redirect to home directory?
+      res.redirect('/');
+    }
+  });
+});
+
+app.delete('/article/:id', function(req, res){
+  let query = {_id:req.params.id}
+
+  // Take the model and pass the query and function
+  Article.remove(query, function(err){
+    if(err){
+      console.log(err);
+    }
+    // Since we made a request from main.js script, we need to send a response
+    // res.send by default will send a 200 status
+    res.send('Success');
+  });
+});
+
 // Lets start the server
 app.listen(3000, function(){
   console.log('Server is listening at port 3000 ...');
