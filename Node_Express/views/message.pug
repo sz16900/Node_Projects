@@ -1,0 +1,7 @@
+//- from the page: https://github.com/expressjs/express-messages
+ 
+.messages
+  each type in Object.keys(messages)
+    each message in messages[type]
+      //- Bootstrap stuff here (danger = red, etc...)
+      div(class="alert alert-"+type) #{message}

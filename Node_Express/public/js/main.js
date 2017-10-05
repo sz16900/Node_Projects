@@ -5,7 +5,7 @@ $(document).ready(function(){
     $.ajax({
       // Submiting with DELETE request
       type: 'DELETE',
-      url: '/article/'+id,
+      url: '/articles/'+id,
       success: function(){
         alert('Deleting Article');
         // Redirect to home page

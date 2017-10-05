@@ -21,6 +21,13 @@ html
             li
               a(href='/articles/add') Add Article
     .container
+      //- from the documentation in express-messages 
+      != messages('message', locals)
+      //-  are there any errors???
+      if errors
+        each error, i in errors
+          //- this error.msg in an object?
+          div(class="alert alert-danger") #{error.msg}
       block content
       br
       hr

@@ -2,6 +2,10 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const expressValidator = require('express-validator');
+const flash = require('connect-flash');
+const session = require('express-session');
+
 
 mongoose.connect('mongodb://localhost/nodekb');
 let db = mongoose.connection;
@@ -34,6 +38,42 @@ app.use(bodyParser.json());
 // Set public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Express Sessions (more) Middleware
+app.use(session({
+  secret: 'keyboard cat',
+  // Brad has this resave to true and no cookies
+  resave: true,
+  saveUninitialized: true,
+  // cookie: { secure: true }
+}));
+
+// Express Messages (even more) Middleware
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+  // Global variable called messages to the express-messages module
+  // I guess this is not required at top ;)
+  res.locals.messages = require('express-messages')(req, res);
+  next();
+});
+
+// Express Validator (more more more...) Middleware
+app.use(expressValidator({
+  errorFormatter: function(param, msg, value) {
+      var namespace = param.split('.')
+      , root    = namespace.shift()
+      , formParam = root;
+
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
+    }
+    return {
+      param : formParam,
+      msg   : msg,
+      value : value
+    };
+  }
+}));
+
 // The Home route
 app.get('/', function(req, res){
   // err if there's one and the response i.e(articles)
@@ -43,7 +83,7 @@ app.get('/', function(req, res){
     } else{
       res.render('index', {
         title:'Articles',
-        // We can sand more than one because we are sending an object
+        // We can send more than one because we are sending an object
         articles:articles
       });
     }
@@ -51,93 +91,11 @@ app.get('/', function(req, res){
   // We want to send {} as an object and render
 });
 
-// Get single article. : is a placeholder
-app.get('/article/:id', function(req, res){
-  // I think this is a mongoose thing. Gets the article
-  // by id.
-  Article.findById(req.params.id, function(err, article){
-    res.render('article', {
-      article:article
-    });
-  });
-});
+// Lets get the route files!
+// Anything that refers to /articles/something should refer to router.js
+let articles = require('./routes/articles');
+app.use('/articles', articles);
 
-// Add route
-app.get('/articles/add', function(req, res){
-  res.render('add_article', {
-    title:'Add articles'
-  });
-});
-
-// Add submit POST route
-// Notice: These have the same url but they are different requests
-app.post('/articles/add', function(req, res){
-  let article = new Article();
-  // These have been parsed already?
-  article.title = req.body.title;
-  article.author = req.body.author;
-  article.body = req.body.body;
-  // console.log(req.body.title);
-  article.save(function(err){
-    if(err){
-      console.log(err);
-    } else{
-      //If no error, then redirect to home directory?
-      res.redirect('/');
-    }
-  });
-});
-
-// Load and Edit Form
-app.get('/article/edit/:id', function(req, res){
-  // I think this is a mongoose thing. Gets the article
-  // by id.
-  Article.findById(req.params.id, function(err, article){
-    res.render('edit_article', {
-      // Dynamic title :)
-      title: 'Edit Article',
-      article:article
-    });
-  });
-});
-
-// Add update submit POST route
-// Notice: These have the same url but they are different requests
-app.post('/articles/edit/:id', function(req, res){
-  // not creating a new object
-  let article = {};
-  // These have been parsed already?
-  article.title = req.body.title;
-  article.author = req.body.author;
-  article.body = req.body.body;
-
-  // Create a query because we have to specify which to update
-  let query = {_id:req.params.id}
-  // Notice that instead of using the article variable (or let)
-  // we use the model (Article) to send to the DB. Then update
-  Article.update(query, article, function(err){
-    if(err){
-      console.log(err);
-    } else{
-      //If no error, then redirect to home directory?
-      res.redirect('/');
-    }
-  });
-});
-
-app.delete('/article/:id', function(req, res){
-  let query = {_id:req.params.id}
-
-  // Take the model and pass the query and function
-  Article.remove(query, function(err){
-    if(err){
-      console.log(err);
-    }
-    // Since we made a request from main.js script, we need to send a response
-    // res.send by default will send a 200 status
-    res.send('Success');
-  });
-});
 
 // Lets start the server
 app.listen(3000, function(){
