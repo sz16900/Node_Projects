@@ -34,6 +34,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // body-parser middleware: parses incoming req body to grab the data
 app.use(bodyParser.json());
 
+// The passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// This is for the passport 
+require('./config/passport')(passport);
+
 app.use('/users', users);
 
 // Index route
