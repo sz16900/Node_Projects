@@ -1,6 +1,6 @@
 // this is a config file to put the database in
 
 module.exports = {
-  database: 'mongodb://localhost:27017/meanauth',
+  database: 'mongodb://alexis:alexis@ds227525.mlab.com:27525/mean_app_primo',
   secret: 'primosecret'
 }

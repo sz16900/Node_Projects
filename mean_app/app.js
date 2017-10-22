@@ -21,7 +21,7 @@ mongoose.connection.on('error', function(err){
 const app = express();
 const users = require('./routes/users');
 
-const port = 3000;
+const port = process.env.PORT || 8080;
 
 // cors middleware: to allow request to our API from a different domain name
 // just one line to handle cors
@@ -38,7 +38,7 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
-// This is for the passport 
+// This is for the passport
 require('./config/passport')(passport);
 
 app.use('/users', users);
@@ -46,6 +46,11 @@ app.use('/users', users);
 // Index route
 app.get('/', function(req, res){
   res.send("Invalid Endpoint");
+});
+
+// Every route goes to the index.html
+app.get('*', function (req, res){
+  res.sendFile(path.join(__dirname, 'public/inde.html'))
 });
 
 // Start the server
